@@ -4,7 +4,32 @@ const APIFeatures = require("../utils/apiFeatures");
 const AppError = require("../utils/appError");
 
 exports.getAllProducts = catchAsyncError(async (req, res, next) => {
-  const features = new APIFeatures(ProductModel.find(), req.query)
+  // Handle price range filtering
+  const queryObj = { ...req.query };
+  
+  // Convert minPrice and maxPrice to MongoDB operators
+  if (queryObj.minPrice || queryObj.maxPrice) {
+    queryObj.price = {};
+    if (queryObj.minPrice) {
+      queryObj.price.$gte = Number(queryObj.minPrice);
+      delete queryObj.minPrice;
+    }
+    if (queryObj.maxPrice) {
+      queryObj.price.$lte = Number(queryObj.maxPrice);
+      delete queryObj.maxPrice;
+    }
+  }
+
+  // Handle search (case-insensitive search in name and description)
+  if (queryObj.search && queryObj.search.trim() !== '') {
+    queryObj.$or = [
+      { name: { $regex: queryObj.search, $options: 'i' } },
+      { description: { $regex: queryObj.search, $options: 'i' } }
+    ];
+    delete queryObj.search;
+  }
+
+  const features = new APIFeatures(ProductModel.find(), queryObj)
     .filter()
     .sort()
     .project()

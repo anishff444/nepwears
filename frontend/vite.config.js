@@ -1,48 +1,22 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server: {
-    watch: {
-      usePolling: true,
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
     },
   },
-  build: {
-    // Output directory for production build
-    outDir: "dist",
-
-    // Generate sourcemaps for production (disable for smaller bundles)
-    sourcemap: false,
-
-    // Chunk size warning limit (in kbs)
-    chunkSizeWarningLimit: 1000,
-
-    // Rollup options for code splitting
-    rollupOptions: {
-      output: {
-        // Manual chunks for better code splitting
-        manualChunks: {
-          // Vendor chunks
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
-          "react-query": ["@tanstack/react-query"],
-          "ui-vendor": ["react-hot-toast", "react-hook-form", "react-icons"],
-          animation: ["gsap", "@gsap/react", "swiper"],
-        },
-        // Naming pattern for chunks
-        chunkFileNames: "assets/js/[name]-[hash].js",
-        entryFileNames: "assets/js/[name]-[hash].js",
-        assetFileNames: "assets/[ext]/[name]-[hash].[ext]",
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
       },
     },
-
-    // Minification (using default esbuild minifier)
-    minify: "esbuild",
+    hmr: {overlay: false}
   },
-
-  // Optimize dependencies
-  optimizeDeps: {
-    include: ["react", "react-dom", "react-router-dom"],
-  },
-});
+})

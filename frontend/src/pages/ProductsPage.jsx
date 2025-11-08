@@ -1,116 +1,94 @@
-import { useSearchParams } from "react-router-dom";
-import { useMemo } from "react";
-import ProductHero from "../features/products/ProductHero";
-import ProductPagination from "../features/products/ProductPagination";
-import Products from "../features/products/Products";
-import { useProducts } from "../features/products/useProducts";
-import Loader from "../ui/Loader";
-import transition from "../ui/transition";
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { productApi } from '../services/productService'
+import ProductCard from '../components/ProductCard'
 
-function ProductPage() {
-  const [searchParams] = useSearchParams();
+export default function ProductsPage() {
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState('-createdAt')
 
-  const page = useMemo(() => {
-    const pageParam = searchParams.get("page");
-    const parsedPage = parseInt(pageParam, 10);
-    return parsedPage > 0 ? parsedPage : 1;
-  }, [searchParams]);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['products', search, sort],
+    queryFn: () => productApi.getAllProducts(),
+  })
 
-  const {
-    data: {
-      data: { products = [], totalPages, currentPage, hasNext, hasPrev } = {},
-    } = {},
-    isPending,
-    isFetching,
-    isError,
-    error,
-  } = useProducts({ page });
-
-  // Handle error state
-  if (isError) {
-    return (
-      <main>
-        <ProductHero />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-            flexDirection: "column",
-            gap: "1rem",
-          }}
-        >
-          <p style={{ color: "red", fontWeight: "bold" }}>
-            {error?.message || "Failed to load products"}
-          </p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      </main>
-    );
-  }
-
-  // Loading state
-  if (isPending) {
-    return (
-      <main>
-        <ProductHero />
-        <Loader />
-      </main>
-    );
-  }
-
-  // No products found
-  if (!products || products.length === 0) {
-    return (
-      <main>
-        <ProductHero />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-          }}
-        >
-          <p style={{ fontSize: "1.2rem", color: "#666" }}>No products found</p>
-        </div>
-      </main>
-    );
-  }
+  const products = data?.data?.products || []
 
   return (
-    <main style={{ position: "relative", minHeight: "100vh" }}>
-      <ProductHero />
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Our Collection
+          </h1>
+          <p className="text-gray-600">
+            Discover our premium selection of products
+          </p>
+        </div>
 
-      <div style={{ position: "relative", minHeight: "400px" }}>
-        {/* Conditional render: show loading OR products */}
-        {isFetching ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              minHeight: "400px",
-            }}
-          >
-            <Loader />
+        {/* Search and Sort Bar */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+              />
+            </div>
+
+            {/* Sort */}
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none sm:w-48"
+            >
+              <option value="-createdAt">Newest First</option>
+              <option value="createdAt">Oldest First</option>
+              <option value="price">Price: Low to High</option>
+              <option value="-price">Price: High to Low</option>
+              <option value="name">Name: A to Z</option>
+              <option value="-name">Name: Z to A</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Products Grid */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-gray-600">Loading products...</div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <p className="text-red-600">Failed to load products. Please try again.</p>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+            <p className="text-gray-600 text-lg">No products found</p>
+            <p className="text-gray-500 text-sm mt-2">Try adjusting your search</p>
           </div>
         ) : (
-          <Products products={products} />
+          <>
+            {/* Product Count */}
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                Showing {products.length} products
+              </p>
+            </div>
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          </>
         )}
       </div>
-
-      <ProductPagination
-        totalPages={totalPages}
-        currentPage={currentPage}
-        hasNext={hasNext}
-        hasPrev={hasPrev}
-      />
-    </main>
-  );
+    </div>
+  )
 }
-
-const ProductsPage = transition(ProductPage);
-ProductsPage.displayName = "ProductsPage";
-export default ProductsPage;

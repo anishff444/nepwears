@@ -10,6 +10,13 @@ class APIFeatures {
     const excludedEl = ["sort", "limit", "page", "fields"];
     excludedEl.forEach((el) => delete queryObj[el]);
 
+    // Remove empty string values
+    Object.keys(queryObj).forEach((key) => {
+      if (queryObj[key] === '' || queryObj[key] === null || queryObj[key] === undefined) {
+        delete queryObj[key];
+      }
+    });
+
     //1B Advanced Filtering
     const queryStr = JSON.stringify(queryObj).replace(
       /\b(gt|gte|lt|lte)\b/g,

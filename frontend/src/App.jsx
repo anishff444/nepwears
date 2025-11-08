@@ -1,175 +1,60 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
-import { lazy, Suspense, useEffect, useState } from "react";
-import AuthContextProvider from "./context/AuthContextProvider";
-import { useAuthContext } from "./hooks/useAuthContext";
-import { AnimatePresence } from "framer-motion";
-import gsap from "gsap";
-
-// Lazy load all page components
-const AppLayout = lazy(() => import("./pages/AppLayout"));
-const Home = lazy(() => import("./pages/Home"));
-const ProductsPage = lazy(() => import("./pages/ProductsPage"));
-const CartPage = lazy(() => import("./pages/CartPage"));
-const Auth = lazy(() => import("./pages/Auth"));
-const Signin = lazy(() => import("./features/user/Signin"));
-const Signup = lazy(() => import("./features/user/Signup"));
-const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
-const PaymentFailed = lazy(() => import("./pages/PaymentFailed"));
-
-function AppRouter({ onComponentLoaded }) {
-  const { isAuthenticated } = useAuthContext();
-  const location = useLocation();
-
-  // Notify when first component is loaded
-  useEffect(() => {
-    onComponentLoaded();
-  }, [onComponentLoaded]);
-
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<ProductsPage />} />
-        </Route>
-
-        <Route path="/auth" element={<Auth />}>
-          <Route index element={<Navigate replace to="signin" />} />
-          <Route
-            path="signin"
-            element={
-              isAuthenticated ? <Navigate replace to="/products" /> : <Signin />
-            }
-          />
-          <Route
-            path="signup"
-            element={
-              isAuthenticated ? <Navigate replace to="/products" /> : <Signup />
-            }
-          />
-        </Route>
-
-        <Route
-          path="/cart"
-          element={
-            isAuthenticated ? (
-              <CartPage />
-            ) : (
-              <Navigate replace to="/auth/signin" />
-            )
-          }
-        />
-
-        {/* Payment result pages */}
-        <Route path="/order-success" element={<OrderSuccess />} />
-        <Route path="/payment-failed" element={<PaymentFailed />} />
-      </Routes>
-    </AnimatePresence>
-  );
-}
+import { Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useThemeStore } from './stores/themeStore'
+import Header from './components/Header'
+import Footer from './components/Footer'
+import CartDrawer from './components/CartDrawer'
+import HomePage from './pages/HomePage'
+import ProductsPage from './pages/ProductsPage'
+import ProductDetailPage from './pages/ProductDetailPage'
+import AuthPage from './pages/AuthPage'
+import CheckoutPage from './pages/CheckoutPage'
+import OrderSuccess from './pages/OrderSuccess'
+import PaymentFailed from './pages/PaymentFailed'
+import OrdersPage from './pages/OrdersPage'
 
 function App() {
-  const [isReady, setIsReady] = useState(false);
-  const [isComponentLoaded, setIsComponentLoaded] = useState(false);
-  const [allResourcesLoaded, setAllResourcesLoaded] = useState(false);
+  const { theme, setTheme } = useThemeStore()
 
   useEffect(() => {
-    const preloader = document.getElementById("preloader");
-    if (!preloader) {
-      setIsReady(true);
-      return;
-    }
-
-    const minDisplayTime = 1000;
-    let resourcesReady = false;
-
-    // Wait for images and fonts to load
-    const waitForResources = async () => {
-      try {
-        // Wait for fonts
-        await document.fonts.ready;
-
-        // Wait for all images
-        const images = Array.from(document.images);
-        await Promise.all(
-          images.map(
-            (img) =>
-              new Promise((resolve) => {
-                if (img.complete) {
-                  resolve();
-                } else {
-                  img.onload = resolve;
-                  img.onerror = resolve;
-                }
-              }),
-          ),
-        );
-
-        resourcesReady = true;
-        setAllResourcesLoaded(true);
-      } catch (error) {
-        console.warn("Resource loading error:", error);
-        resourcesReady = true;
-        setAllResourcesLoaded(true);
-      }
-    };
-
-    waitForResources();
-
-    setTimeout(() => {
-      const checkReady = () => {
-        if (resourcesReady) {
-          preloader.style.background = "transparent";
-          preloader.style.pointerEvents = "none";
-          setIsReady(true);
-        } else {
-          // Check again after a short delay
-          setTimeout(checkReady, 100);
-        }
-      };
-      checkReady();
-    }, minDisplayTime);
-  }, []);
-
-  useEffect(() => {
-    if (!isComponentLoaded || !allResourcesLoaded) return;
-
-    const preloader = document.getElementById("preloader");
-    if (!preloader) return;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        gsap.to(".bars", {
-          animationPlayState: "paused",
-          transformOrigin: "bottom",
-          scaleY: 0,
-          duration: 0.5,
-          ease: "power3.inOut",
-          onComplete: () => {
-            preloader.remove();
-          },
-        });
-      });
-    });
-  }, [isComponentLoaded, allResourcesLoaded]);
-
-  if (!isReady) return null;
+    // Initialize theme on mount
+    const isDark = theme === 'dark'
+    document.documentElement.classList.toggle('dark', isDark)
+  }, [theme])
 
   return (
-    <AuthContextProvider>
-      <BrowserRouter>
-        <Suspense fallback={null}>
-          <AppRouter onComponentLoaded={() => setIsComponentLoaded(true)} />
-        </Suspense>
-      </BrowserRouter>
-    </AuthContextProvider>
-  );
+    <div className="min-h-screen bg-white dark:bg-dark-950 transition-colors duration-300">
+      <Header />
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/auth/login" element={<AuthPage />} />
+          <Route path="/auth/signup" element={<AuthPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/payment-failed" element={<PaymentFailed />} />
+          <Route path="*" element={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-6xl font-bold gradient-text mb-4">404</h1>
+                <p className="text-xl text-dark-600 dark:text-dark-400 mb-6">
+                  Page not found
+                </p>
+                <a href="/" className="btn-primary">
+                  Go Home
+                </a>
+              </div>
+            </div>
+          } />
+        </Routes>
+      </main>
+      <Footer />
+      <CartDrawer />
+    </div>
+  )
 }
 
-export default App;
+export default App

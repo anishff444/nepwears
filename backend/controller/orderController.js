@@ -68,18 +68,22 @@ exports.createOrder = catchAsyncError(async (req, res, next) => {
 
   // 4. Generate eSewa payment data
   const productCode = process.env.ESEWA_PRODUCT_CODE || "EPAYTEST";
+  
+  // Ensure amounts are properly formatted as strings with 2 decimal places
+  const formattedAmount = totalAmount.toFixed(2);
+  
   const signature = generateEsewaSignature(
-    totalAmount,
+    formattedAmount,
     publicToken,
     productCode
   );
 
   const paymentData = {
-    amount: totalAmount,
+    amount: formattedAmount,
     tax_amount: "0",
     product_service_charge: "0",
     product_delivery_charge: "0",
-    total_amount: totalAmount,
+    total_amount: formattedAmount,
     transaction_uuid: publicToken,
     product_code: productCode,
     success_url: `${process.env.BACKEND_URL}/api/v1/orders/verify-payment`,
@@ -154,9 +158,12 @@ exports.verifyEsewaPayment = catchAsyncError(async (req, res, next) => {
     );
   }
 
-  // 5. Verify amount matches
-  if (parseFloat(total_amount) !== order.totalAmount) {
-    order.paymentStatus = "completed";
+  // 5. Verify amount matches (compare as floats with 2 decimal precision)
+  const receivedAmount = parseFloat(total_amount).toFixed(2);
+  const expectedAmount = order.totalAmount.toFixed(2);
+  
+  if (receivedAmount !== expectedAmount) {
+    order.paymentStatus = "failed";
     await order.save();
     return res.redirect(
       `${process.env.FRONTEND_URL}/payment-failed?reason=amount_mismatch`
@@ -230,7 +237,7 @@ exports.checkPaymentStatus = catchAsyncError(async (req, res, next) => {
   const esewaStatusUrl = process.env.ESEWA_STATUS_CHECK_URL;
   const queryParams = new URLSearchParams({
     product_code: process.env.ESEWA_PRODUCT_CODE,
-    total_amount: order.totalAmount.toString(),
+    total_amount: order.totalAmount.toFixed(2),
     transaction_uuid: order.publicToken,
   });
 

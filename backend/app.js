@@ -7,7 +7,7 @@ const productRouter = require("./routes/productRoute");
 const morgan = require("morgan");
 const cartRouter = require("./routes/cartRoute");
 const orderRouter = require("./routes/orderRoute");
-const cors = require("cors");
+const cors = require('cors');
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.use(express.json());
 
 // CORS configuration - allow frontend origin
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  origin: process.env.CORS_ORIGIN || ["http://localhost:5173", "http://localhost:5174", "https://c06mzsh1-5173.inc1.devtunnels.ms"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
