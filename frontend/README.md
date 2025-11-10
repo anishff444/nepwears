@@ -1,263 +1,214 @@
-# Luxe Minimal - Premium E-commerce Frontend v2
+# NepWears - Frontend V2
 
-A completely reimagined, modern e-commerce frontend built with cutting-edge technologies and creative design principles.
+A modern, aesthetic e-commerce frontend for **NepWears** - celebrating authentic Nepali fashion and heritage.
 
 ## 🎨 Design Philosophy
 
-**"Luxe Minimal"** - Where luxury meets minimalism. This frontend embraces:
+NepWears Frontend V2 features a completely new design aesthetic focused on:
 
-- **Glassmorphism**: Frosted glass effects with backdrop blur
-- **3D Card Effects**: Interactive hover states with depth
-- **Smooth Animations**: Powered by Framer Motion for fluid transitions
-- **Dark/Light Themes**: Seamless theme switching
-- **Premium UX**: Micro-interactions throughout the experience
+- **Nepal-inspired color palette** with earthy terracotta and nepal tones
+- **Minimalist and clean** interface design
+- **Cultural heritage** emphasis throughout the UI
+- **Premium feel** with smooth animations and transitions
+- **Mobile-first** responsive design
 
-## ✨ Features
+## 🚀 Features
 
-### Core Features
-- 🎯 **Modern Product Catalog** - Advanced filtering, sorting, and search
-- 🛒 **Animated Shopping Cart** - Drawer-style cart with spring physics
-- 🔐 **Secure Authentication** - Login/Signup with JWT tokens
-- 💳 **Multi-step Checkout** - Progress indicators and validation
-- 📱 **Fully Responsive** - Mobile-first design approach
-- 🌓 **Dark Mode** - Persistent theme preference
-- ⚡ **Optimistic Updates** - Lightning-fast UI responses
-- 🎭 **Page Transitions** - Smooth navigation animations
+- **Modern UI/UX** with Nepal-inspired branding
+- **Product browsing** with advanced filtering and search
+- **Shopping cart** with slide-out drawer
+- **User authentication** (Login/Signup)
+- **Secure checkout** with eSewa payment integration
+- **Order management** and history
+- **Responsive design** for all devices
+- **Smooth animations** using Framer Motion
+- **Toast notifications** for user feedback
 
-### Technical Features
-- **React Query** - Server state management with caching
-- **Zustand** - Lightweight client state management
-- **Axios** - HTTP client with interceptors
-- **React Router v6** - Client-side routing
-- **Tailwind CSS** - Utility-first styling
-- **Framer Motion** - Production-ready animations
-- **React Hot Toast** - Beautiful notifications
-- **Lucide Icons** - Modern icon library
+## 🛠️ Tech Stack
 
-## 🚀 Getting Started
+- **React 18** - UI library
+- **Vite** - Build tool
+- **React Router DOM** - Routing
+- **Tailwind CSS 4** - Styling
+- **Zustand** - State management
+- **React Query** - Server state management
+- **Axios** - HTTP client
+- **Lucide React** - Icons
+- **React Hot Toast** - Notifications
+- **Framer Motion** - Animations
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Backend server running on `http://localhost:3000`
+## 📦 Installation
 
-### Installation
+1. **Install dependencies:**
+   ```bash
+   cd frontend-v2
+   npm install
+   ```
 
-1. Navigate to the frontend-v2 directory:
-```bash
-cd frontend-v2
-```
+2. **Create environment file:**
+   ```bash
+   cp env.example .env
+   ```
 
-2. Install dependencies:
-```bash
-npm install
-```
+3. **Update .env with your API URL:**
+   ```env
+   VITE_API_URL=http://localhost:5000/api/v1
+   ```
 
-3. Create `.env` file (optional):
-```env
-VITE_API_URL=http://localhost:3000/api/v1
-```
+4. **Start development server:**
+   ```bash
+   npm run dev
+   ```
 
-4. Start the development server:
-```bash
-npm run dev
-```
+The application will run on `http://localhost:3001`
 
-5. Open your browser to `http://localhost:5173`
+## 🎨 Color Palette
 
-### Build for Production
+### Nepal Colors (Earth Tones)
+- `nepal-50` to `nepal-900` - Warm, earthy beige tones
 
-```bash
-npm run build
-```
-
-The optimized build will be in the `dist/` folder.
+### Terracotta (Brand Accent)
+- `terracotta-50` to `terracotta-900` - Vibrant terracotta/orange tones
 
 ## 📁 Project Structure
 
 ```
 frontend-v2/
 ├── src/
-│   ├── components/        # Reusable UI components
-│   │   ├── Header.jsx
-│   │   ├── Footer.jsx
+│   ├── components/      # Reusable UI components
+│   │   ├── Alert.jsx
 │   │   ├── CartDrawer.jsx
+│   │   ├── Footer.jsx
+│   │   ├── Header.jsx
+│   │   ├── Loader.jsx
+│   │   ├── Modal.jsx
 │   │   ├── ProductCard.jsx
-│   │   └── Loader.jsx
-│   ├── pages/            # Page components
-│   │   ├── HomePage.jsx
-│   │   ├── ProductsPage.jsx
-│   │   ├── ProductDetailPage.jsx
+│   │   └── Skeleton.jsx
+│   ├── lib/             # Utilities and API setup
+│   │   └── api.js
+│   ├── pages/           # Page components
 │   │   ├── AuthPage.jsx
-│   │   └── CheckoutPage.jsx
-│   ├── stores/           # Zustand stores
+│   │   ├── CheckoutPage.jsx
+│   │   ├── HomePage.jsx
+│   │   ├── OrdersPage.jsx
+│   │   ├── OrderSuccess.jsx
+│   │   ├── PaymentFailed.jsx
+│   │   ├── ProductDetailPage.jsx
+│   │   └── ProductsPage.jsx
+│   ├── services/        # API service functions
+│   │   ├── authService.js
+│   │   ├── cartService.js
+│   │   ├── orderService.js
+│   │   └── productService.js
+│   ├── stores/          # Zustand state stores
 │   │   ├── authStore.js
 │   │   ├── cartStore.js
 │   │   └── themeStore.js
-│   ├── services/         # API services
-│   │   ├── authService.js
-│   │   ├── productService.js
-│   │   ├── cartService.js
-│   │   └── orderService.js
-│   ├── lib/              # Utilities
-│   │   └── api.js
-│   ├── App.jsx           # Main app component
-│   ├── main.jsx          # Entry point
-│   └── index.css         # Global styles
-├── public/               # Static assets
-├── index.html
+│   ├── App.jsx          # Main app component
+│   ├── main.jsx         # Entry point
+│   └── index.css        # Global styles & Tailwind
 ├── package.json
 ├── vite.config.js
 └── tailwind.config.js
 ```
 
-## 🎨 Design System
+## 🎯 Key Features by Page
 
-### Color Palette
-- **Primary**: Blue gradient (from-primary-500 to-primary-600)
-- **Secondary**: Purple to Pink gradient
-- **Dark Mode**: Sophisticated dark-50 to dark-950 scale
-- **Accent**: Dynamic gradients for CTAs and highlights
+### Home Page
+- Hero section with Nepal-inspired design
+- Brand story and values
+- Featured products grid
+- Call-to-action sections
 
-### Typography
-- **Font**: Inter - Clean, modern, highly readable
-- **Hierarchy**: 
-  - Display: 5xl-7xl for heroes
-  - Headings: 2xl-4xl
-  - Body: base-lg
-  - Small: sm-xs
+### Products Page
+- Product grid with cards
+- Search and sort functionality
+- Filter options
+- Responsive grid layout
 
-### Spacing
-- Consistent 4px base unit
-- Generous whitespace for premium feel
-- Asymmetric layouts for visual interest
+### Product Detail Page
+- Large product images
+- Detailed product information
+- Add to cart functionality
+- Stock availability
+- Share and wishlist options
 
-### Components
-- **Glass Effects**: Blur + transparency + subtle borders
-- **Rounded Corners**: xl-3xl for modern aesthetic
-- **Shadows**: Layered, colored shadows for depth
-- **Animations**: Spring-based physics for natural movement
+### Cart Drawer
+- Slide-out cart interface
+- Item management
+- Real-time total calculation
+- Checkout button
 
-## 🔌 Backend Integration
+### Checkout Page
+- Order summary
+- eSewa payment integration
+- Secure payment indicators
 
-This frontend integrates with your existing backend API:
+### Orders Page
+- Order history
+- Order status tracking
+- Order details
 
-### Authentication Endpoints
-- `POST /api/v1/users/signup` - User registration
-- `POST /api/v1/users/login` - User login
-- `GET /api/v1/users/me` - Get current user
-- `PATCH /api/v1/users/updateMe` - Update profile
-- `PATCH /api/v1/users/updateMyPassword` - Change password
+## 🔐 Authentication
 
-### Product Endpoints
-- `GET /api/v1/products` - List products (with filters)
-- `GET /api/v1/products/:id` - Get product details
-- `POST /api/v1/products/createProduct` - Create product (admin/seller)
-- `PATCH /api/v1/products/updateProductDetail/:id` - Update product
+Uses JWT-based authentication with:
+- Login/Signup forms
+- Protected routes
+- Persistent auth state (Zustand + localStorage)
 
-### Cart Endpoints
-- `GET /api/v1/carts` - Get user cart
-- `POST /api/v1/carts/add/:productId` - Add to cart
-- `POST /api/v1/carts/remove/:productId` - Remove from cart
+## 💳 Payment Integration
 
-### Order Endpoints
-- `POST /api/v1/orders/checkout` - Create order
-- `GET /api/v1/orders/verify-payment` - Verify eSewa payment
-- `GET /api/v1/orders/history` - Order history
-- `GET /api/v1/orders/status/:orderId` - Check order status
+Integrated with **eSewa** payment gateway for secure online payments.
 
-## 🌟 Key Differences from v1
+## 🎨 Custom Design System
 
-1. **Complete UI Redesign**: Modern glassmorphism vs traditional design
-2. **Advanced Animations**: Framer Motion vs basic CSS transitions
-3. **Better State Management**: Zustand + React Query vs Context API
-4. **Improved DX**: Better folder structure and code organization
-5. **Premium UX**: Micro-interactions and attention to detail
-6. **Performance**: Optimized rendering and code splitting
-7. **Accessibility**: Better keyboard navigation and screen reader support
+The project includes a custom design system with:
+- **Typography** - Playfair Display for headings, Inter for body
+- **Color palette** - Nepal-inspired earthy tones
+- **Components** - Reusable button, card, input styles
+- **Animations** - Fade-in, slide-up, slide-down effects
+- **Patterns** - Nepal-inspired decorative patterns
 
-## 🛠️ Customization
+## 📱 Responsive Design
 
-### Changing Theme Colors
-Edit `tailwind.config.js`:
-```js
-theme: {
-  extend: {
-    colors: {
-      primary: {
-        // Your custom color scale
-      }
-    }
-  }
-}
+Fully responsive across all breakpoints:
+- Mobile (< 640px)
+- Tablet (640px - 1024px)
+- Desktop (> 1024px)
+
+## 🚀 Build for Production
+
+```bash
+npm run build
 ```
 
-### Adding New Pages
-1. Create component in `src/pages/`
-2. Add route in `src/App.jsx`
-3. Update navigation in `src/components/Header.jsx`
+Built files will be in the `dist/` folder.
 
-### Modifying Animations
-Edit animation variants in component files or add new ones in `tailwind.config.js`
+## 🌐 Preview Production Build
 
-## 📱 Responsive Breakpoints
+```bash
+npm run preview
+```
 
-- **Mobile**: < 640px
-- **Tablet**: 640px - 1024px
-- **Desktop**: > 1024px
-- **Large Desktop**: > 1280px
+## 📝 Notes
 
-## 🔒 Security
+- Make sure the backend API is running on the specified URL
+- The frontend runs on port 3001 by default (different from original frontend on port 3000)
+- All API calls are proxied through Vite in development mode
 
-- JWT tokens stored in localStorage (encrypted)
-- Axios interceptors for automatic token attachment
-- CORS configured for your backend
-- Input validation on all forms
-- XSS protection via React's built-in escaping
+## 🎨 Brand Identity - NepWears
 
-## 📈 Performance
+**Tagline:** "Wear Your Heritage"
 
-- **Code Splitting**: Automatic route-based splitting
-- **Lazy Loading**: Images and components
-- **Caching**: React Query smart caching strategy
-- **Optimistic Updates**: Instant UI feedback
-- **Tree Shaking**: Remove unused code
-- **Minification**: Production build optimization
+**Mission:** Celebrating authentic Nepali craftsmanship and culture through modern fashion.
 
-## 🎯 Future Enhancements
-
-- [ ] Product reviews and ratings
-- [ ] Wishlist functionality
-- [ ] Order tracking page
-- [ ] User profile page
-- [ ] Admin dashboard
-- [ ] Real-time notifications
-- [ ] Social auth (Google, Facebook)
-- [ ] Advanced search with autocomplete
-- [ ] Product comparison feature
-- [ ] Gift cards and coupons
-
-## 🤝 Contributing
-
-This is a creative reimagining of your e-commerce frontend. Feel free to:
-- Customize colors and branding
-- Add new features
-- Improve animations
-- Enhance accessibility
-- Optimize performance
-
-## 📄 License
-
-Same as your main project license.
-
-## 🎉 Credits
-
-- **Design Inspiration**: Modern e-commerce leaders
-- **Icons**: Lucide Icons
-- **Fonts**: Google Fonts (Inter)
-- **Animations**: Framer Motion
-- **UI Framework**: Tailwind CSS
+**Values:**
+- Authenticity
+- Quality Craftsmanship
+- Cultural Heritage
+- Sustainability
+- Community Support
 
 ---
 
-Built with ❤️ and creativity by embracing modern web design principles.
+Built with ❤ in Nepal

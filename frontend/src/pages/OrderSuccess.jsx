@@ -1,130 +1,67 @@
-import { motion } from 'framer-motion'
-import { CheckCircle, Package, ArrowRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { orderApi } from '../services/orderService'
-import Loader from '../components/Loader'
+import { CheckCircle, Package } from 'lucide-react'
 
 export default function OrderSuccess() {
-  const [searchParams] = useSearchParams()
-  const [order, setOrder] = useState(null)
-  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
-  const orderId = searchParams.get('orderId')
-
-  useEffect(() => {
-    if (orderId) {
-      fetchOrderDetails()
-    } else {
-      setLoading(false)
-    }
-  }, [orderId])
-
-  const fetchOrderDetails = async () => {
-    try {
-      const response = await orderApi.checkPaymentStatus(orderId)
-      setOrder(response.data.order)
-    } catch (error) {
-      console.error('Error fetching order:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) {
-    return <Loader />
-  }
+  const [searchParams] = useSearchParams()
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full"
-      >
-        <div className="glass rounded-3xl p-8 text-center">
-          {/* Success Icon */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="w-20 h-20 mx-auto mb-6 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center"
-          >
-            <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
-          </motion.div>
+    <div className="min-h-screen bg-nepal-50/50 flex items-center justify-center p-4 py-12">
+      <div className="max-w-md w-full text-center">
+        {/* Success Icon */}
+        <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-fade-in">
+          <CheckCircle className="w-12 h-12 text-green-600" />
+        </div>
 
-          {/* Success Message */}
-          <motion.h1
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-3xl font-bold mb-2"
-          >
-            Payment Successful!
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-dark-600 dark:text-dark-400 mb-6"
-          >
-            Your order has been placed successfully
-          </motion.p>
+        {/* Content Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-nepal-200 p-8 mb-6 animate-slide-up">
+          <h1 className="heading-2 text-green-600 mb-3">
+            Order Successful!
+          </h1>
+          <p className="text-nepal-700 mb-6 leading-relaxed">
+            Thank you for your purchase. Your order has been confirmed and will be processed soon.
+          </p>
 
           {/* Order Details */}
-          {order && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="glass rounded-2xl p-4 mb-6 text-left"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <Package className="w-5 h-5 text-primary-500" />
-                <div>
-                  <p className="text-sm text-dark-500 dark:text-dark-400">Order ID</p>
-                  <p className="font-mono text-sm font-semibold">{order._id}</p>
-                </div>
-              </div>
-              <div className="border-t border-dark-200 dark:border-dark-700 pt-3">
-                <div className="flex justify-between mb-2">
-                  <span className="text-dark-600 dark:text-dark-400">Total Amount</span>
-                  <span className="font-bold">Rs. {order.totalAmount?.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-dark-600 dark:text-dark-400">Status</span>
-                  <span className="text-green-600 dark:text-green-400 font-semibold">
-                    {order.paymentStatus}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          )}
+          <div className="bg-nepal-50 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-center gap-2 text-nepal-700 mb-2">
+              <Package className="w-5 h-5" />
+              <span className="font-medium">Order ID</span>
+            </div>
+            <p className="font-mono text-terracotta-600 font-semibold">
+              {searchParams.get('orderId') || 'N/A'}
+            </p>
+          </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+          <p className="text-sm text-nepal-600 mb-6">
+            A confirmation email has been sent to your registered email address.
+          </p>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
               onClick={() => navigate('/orders')}
-              className="btn-primary w-full inline-flex items-center justify-center gap-2"
+              className="flex-1 btn btn-primary"
             >
               View My Orders
-              <ArrowRight className="w-4 h-4" />
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            </button>
+            <button
               onClick={() => navigate('/products')}
-              className="btn-secondary w-full"
+              className="flex-1 btn btn-outline"
             >
               Continue Shopping
-            </motion.button>
+            </button>
           </div>
         </div>
-      </motion.div>
+
+        {/* Home Link */}
+        <button
+          onClick={() => navigate('/')}
+          className="text-nepal-700 hover:text-terracotta-600 text-sm font-medium transition-colors"
+        >
+          ← Back to Home
+        </button>
+      </div>
     </div>
   )
 }

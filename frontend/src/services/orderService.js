@@ -3,8 +3,6 @@ import api from '../lib/api'
 export const orderService = {
   createOrder: async (data) => {
     const response = await api.post('/orders/checkout', data)
-    // Backend returns { success, message, data: { order, paymentData, esewaPaymentUrl } }
-    // We return the data object which contains paymentData
     return response.data.data
   },
 
@@ -15,7 +13,7 @@ export const orderService = {
 
   getOrderHistory: async () => {
     const response = await api.get('/orders/history')
-    return response.data
+    return response.data.data;
   },
 
   getOrderStatus: async (orderId) => {
@@ -29,5 +27,4 @@ export const orderService = {
   },
 }
 
-// Also export as orderApi for backward compatibility
 export const orderApi = orderService

@@ -1,37 +1,28 @@
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react'
-import { useCartStore } from '../stores/cartStore'
+import { X, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useCartStore } from '../stores/cartStore'
 import { useEffect } from 'react'
-import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
 
 export default function CartDrawer() {
-  const { cart, isOpen, closeCart, removeItem, getTotal, fetchCart, addItem, getItemCount } = useCartStore()
-  const { user } = useAuthStore()
+  const { isOpen, closeCart, cart, removeItem, fetchCart, getTotal, getItemCount } = useCartStore()
   const navigate = useNavigate()
+  
   const total = getTotal()
-  const items = cart || []
   const itemCount = getItemCount()
 
   useEffect(() => {
-    if (isOpen && user) {
+    if (isOpen) {
       fetchCart()
     }
-  }, [isOpen, user, fetchCart])
+  }, [isOpen, fetchCart])
 
-  const handleQuantityIncrease = async (productId) => {
-    try {
-      await addItem(productId)
-    } catch (error) {
-      toast.error('Failed to update quantity')
-    }
-  }
-
-  const handleQuantityDecrease = async (productId) => {
+  const handleRemoveItem = async (productId) => {
     try {
       await removeItem(productId)
+      toast.success('Item removed from cart')
     } catch (error) {
-      toast.error('Failed to update quantity')
+      toast.error('Failed to remove item')
     }
   }
 
@@ -44,55 +35,70 @@ export default function CartDrawer() {
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Overlay */}
       <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 animate-fade-in"
         onClick={closeCart}
-        className="fixed inset-0 bg-black/50 z-50 transition-opacity"
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full sm:w-[420px] bg-white z-50 flex flex-col shadow-2xl">
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Shopping Cart ({itemCount})</h2>
+        <div className="flex items-center justify-between p-6 border-b border-nepal-200">
+          <div className="flex items-center gap-3">
+            <ShoppingBag className="w-6 h-6 text-terracotta-600" />
+            <div>
+              <h2 className="text-xl font-display font-bold text-nepal-900">
+                Shopping Cart
+              </h2>
+              <p className="text-sm text-nepal-500">
+                {itemCount} {itemCount === 1 ? 'item' : 'items'}
+              </p>
+            </div>
+          </div>
           <button
             onClick={closeCart}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-nepal-100 rounded-full transition-colors"
+            aria-label="Close cart"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-nepal-600" />
           </button>
         </div>
 
         {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <ShoppingBag className="w-10 h-10 text-gray-400" />
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+          {!cart || cart.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center">
+              <div className="w-20 h-20 bg-nepal-100 rounded-full flex items-center justify-center mb-4">
+                <ShoppingBag className="w-10 h-10 text-nepal-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
-              <p className="text-sm text-gray-500 mb-6">Add products to get started!</p>
+              <h3 className="text-lg font-display font-semibold text-nepal-900 mb-2">
+                Your cart is empty
+              </h3>
+              <p className="text-nepal-500 text-sm mb-6">
+                Add some items to get started
+              </p>
               <button
                 onClick={() => {
                   closeCart()
                   navigate('/products')
                 }}
-                className="px-6 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
+                className="btn btn-primary"
               >
-                Browse Products
+                Start Shopping
               </button>
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => (
+              {cart.map((item) => (
                 <div
                   key={item.productId?._id}
-                  className="flex gap-3 p-3 bg-gray-50 rounded-lg"
+                  className="bg-nepal-50 rounded-lg p-4 flex gap-4"
                 >
                   {/* Product Image */}
-                  <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-white">
+                  <div className="w-20 h-20 bg-white rounded-md overflow-hidden flex-shrink-0">
                     <img
-                      src={item.productId?.imageUrl}
+                      src={item.productId?.imageUrl || '/placeholder.jpg'}
                       alt={item.productId?.name}
                       className="w-full h-full object-cover"
                     />
@@ -100,37 +106,27 @@ export default function CartDrawer() {
 
                   {/* Product Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 text-sm truncate mb-1">
+                    <h3 className="font-medium text-nepal-900 truncate">
                       {item.productId?.name}
                     </h3>
-                    <p className="text-sm font-semibold text-orange-500 mb-2">
-                      ${item.productId?.price?.toFixed(2)}
+                    <p className="text-sm text-nepal-600 mt-1">
+                      NPR {item.productId?.price?.toLocaleString()}
                     </p>
-                    
-                    {/* Quantity Controls */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleQuantityDecrease(item.productId?._id)}
-                        className="w-7 h-7 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-100 transition-colors"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                      <button
-                        onClick={() => handleQuantityIncrease(item.productId?._id)}
-                        className="w-7 h-7 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-100 transition-colors"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-sm text-nepal-600">
+                        Qty: {item.quantity}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Item Total */}
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-900">
-                      ${((item.productId?.price || 0) * item.quantity).toFixed(2)}
-                    </p>
-                  </div>
+                  {/* Remove Button */}
+                  <button
+                    onClick={() => handleRemoveItem(item.productId?._id)}
+                    className="p-2 hover:bg-red-100 text-red-600 rounded-md transition-colors self-start"
+                    aria-label="Remove item"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -138,31 +134,44 @@ export default function CartDrawer() {
         </div>
 
         {/* Footer */}
-        {items.length > 0 && (
-          <div className="p-4 border-t border-gray-200 space-y-3 bg-gray-50">
+        {cart && cart.length > 0 && (
+          <div className="border-t border-nepal-200 p-6 space-y-4">
             {/* Subtotal */}
-            <div className="flex items-center justify-between text-base">
-              <span className="text-gray-700">Subtotal</span>
-              <span className="font-semibold text-gray-900">${total.toFixed(2)}</span>
+            <div className="flex items-center justify-between text-lg">
+              <span className="font-medium text-nepal-700">Subtotal</span>
+              <span className="font-display font-bold text-nepal-900">
+                NPR {total.toLocaleString()}
+              </span>
             </div>
 
             {/* Checkout Button */}
             <button
               onClick={handleCheckout}
-              className="w-full py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors"
+              className="w-full btn btn-primary text-lg py-3"
             >
               Proceed to Checkout
             </button>
 
-            <button
-              onClick={closeCart}
-              className="w-full py-2 text-gray-700 text-sm font-medium hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Continue Shopping
-            </button>
+            <p className="text-xs text-nepal-500 text-center">
+              Shipping and taxes calculated at checkout
+            </p>
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes slide-in-right {
+          from {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+        .animate-slide-in-right {
+          animation: slide-in-right 0.3s ease-out;
+        }
+      `}</style>
     </>
   )
 }

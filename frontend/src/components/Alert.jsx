@@ -1,69 +1,89 @@
-import { motion } from 'framer-motion'
-import { AlertCircle, CheckCircle, Info, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react'
+import { useEffect } from 'react'
 
-export default function Alert({ type = 'info', title, message, onClose }) {
+export default function Alert({ 
+  type = 'info', 
+  message, 
+  onClose, 
+  autoClose = true,
+  duration = 5000 
+}) {
   const types = {
     success: {
       icon: CheckCircle,
-      bgColor: 'bg-green-50 dark:bg-green-900/20',
-      borderColor: 'border-green-200 dark:border-green-800',
-      iconColor: 'text-green-600 dark:text-green-400',
-      textColor: 'text-green-800 dark:text-green-200',
+      bg: 'bg-green-50',
+      border: 'border-green-200',
+      text: 'text-green-800',
+      iconColor: 'text-green-500'
     },
     error: {
       icon: XCircle,
-      bgColor: 'bg-red-50 dark:bg-red-900/20',
-      borderColor: 'border-red-200 dark:border-red-800',
-      iconColor: 'text-red-600 dark:text-red-400',
-      textColor: 'text-red-800 dark:text-red-200',
+      bg: 'bg-red-50',
+      border: 'border-red-200',
+      text: 'text-red-800',
+      iconColor: 'text-red-500'
     },
     warning: {
       icon: AlertCircle,
-      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-      borderColor: 'border-orange-200 dark:border-orange-800',
-      iconColor: 'text-orange-600 dark:text-orange-400',
-      textColor: 'text-orange-800 dark:text-orange-200',
+      bg: 'bg-amber-50',
+      border: 'border-amber-200',
+      text: 'text-amber-800',
+      iconColor: 'text-amber-500'
     },
     info: {
       icon: Info,
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-      borderColor: 'border-blue-200 dark:border-blue-800',
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      textColor: 'text-blue-800 dark:text-blue-200',
-    },
+      bg: 'bg-blue-50',
+      border: 'border-blue-200',
+      text: 'text-blue-800',
+      iconColor: 'text-blue-500'
+    }
   }
 
-  const config = types[type]
+  const config = types[type] || types.info
   const Icon = config.icon
 
+  useEffect(() => {
+    if (autoClose && onClose) {
+      const timer = setTimeout(() => {
+        onClose()
+      }, duration)
+      return () => clearTimeout(timer)
+    }
+  }, [autoClose, duration, onClose])
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className={`${config.bgColor} ${config.borderColor} border rounded-xl p-4 flex items-start gap-3`}
+    <div
+      className={`
+        ${config.bg} ${config.border} ${config.text}
+        border rounded-lg p-4 flex items-start gap-3 shadow-sm
+        animate-slide-down
+      `}
+      role="alert"
     >
       <Icon className={`w-5 h-5 ${config.iconColor} flex-shrink-0 mt-0.5`} />
-      <div className="flex-1">
-        {title && (
-          <h4 className={`font-semibold mb-1 ${config.textColor}`}>{title}</h4>
-        )}
-        {message && <p className={`text-sm ${config.textColor}`}>{message}</p>}
-      </div>
+      <p className="flex-1 text-sm font-medium">{message}</p>
       {onClose && (
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+        <button
           onClick={onClose}
-          className={`${config.iconColor} hover:opacity-75 transition-opacity`}
+          className="flex-shrink-0 rounded hover:bg-black/10 p-1 transition-colors"
+          aria-label="Close alert"
         >
-          <XCircle className="w-5 h-5" />
-        </motion.button>
+          <X className="w-4 h-4" />
+        </button>
       )}
-    </motion.div>
+    </div>
   )
 }
 
-// Usage:
-// <Alert type="success" title="Success!" message="Your order has been placed." />
-// <Alert type="error" message="Something went wrong." onClose={() => {}} />
+// Toast Container Component
+export function AlertContainer({ alerts = [] }) {
+  return (
+    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-md w-full pointer-events-none">
+      <div className="pointer-events-auto space-y-2">
+        {alerts.map((alert) => (
+          <Alert key={alert.id} {...alert} />
+        ))}
+      </div>
+    </div>
+  )
+}

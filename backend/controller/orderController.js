@@ -113,6 +113,7 @@ exports.verifyEsewaPayment = catchAsyncError(async (req, res, next) => {
 
   // 1. Decode eSewa response
   const decodedData = JSON.parse(Buffer.from(data, "base64").toString());
+  console.log(decodedData);
   const {
     transaction_uuid,
     transaction_code,
@@ -131,6 +132,7 @@ exports.verifyEsewaPayment = catchAsyncError(async (req, res, next) => {
     );
   }
 
+  console.log(order)
   // 3. If payment already processed, redirect to success
   if (order.paymentStatus === "completed") {
     return res.redirect(
@@ -161,7 +163,6 @@ exports.verifyEsewaPayment = catchAsyncError(async (req, res, next) => {
   // 5. Verify amount matches (compare as floats with 2 decimal precision)
   const receivedAmount = parseFloat(total_amount).toFixed(2);
   const expectedAmount = order.totalAmount.toFixed(2);
-  
   if (receivedAmount !== expectedAmount) {
     order.paymentStatus = "failed";
     await order.save();

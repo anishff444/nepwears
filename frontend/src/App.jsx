@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
-import { useThemeStore } from './stores/themeStore'
+import { Toaster } from 'react-hot-toast'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import CartDrawer from './components/CartDrawer'
@@ -14,18 +13,11 @@ import PaymentFailed from './pages/PaymentFailed'
 import OrdersPage from './pages/OrdersPage'
 
 function App() {
-  const { theme, setTheme } = useThemeStore()
-
-  useEffect(() => {
-    // Initialize theme on mount
-    const isDark = theme === 'dark'
-    document.documentElement.classList.toggle('dark', isDark)
-  }, [theme])
-
   return (
-    <div className="min-h-screen bg-white dark:bg-dark-950 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col bg-nepal-50">
       <Header />
-      <main>
+      
+      <main className="flex-1">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
@@ -36,23 +28,58 @@ function App() {
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/payment-failed" element={<PaymentFailed />} />
-          <Route path="*" element={
-            <div className="min-h-screen flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-6xl font-bold gradient-text mb-4">404</h1>
-                <p className="text-xl text-dark-600 dark:text-dark-400 mb-6">
-                  Page not found
-                </p>
-                <a href="/" className="btn-primary">
-                  Go Home
-                </a>
+          
+          {/* 404 Page */}
+          <Route
+            path="*"
+            element={
+              <div className="min-h-screen flex items-center justify-center bg-nepal-50/50">
+                <div className="text-center">
+                  <h1 className="text-6xl font-display font-bold gradient-text mb-4">
+                    404
+                  </h1>
+                  <p className="text-xl text-nepal-600 mb-6">
+                    Page not found
+                  </p>
+                  <a href="/" className="btn btn-primary">
+                    Go Home
+                  </a>
+                </div>
               </div>
-            </div>
-          } />
+            }
+          />
         </Routes>
       </main>
+
       <Footer />
       <CartDrawer />
+      
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#fff',
+            color: '#5c4534',
+            border: '1px solid #e8dfd0',
+            borderRadius: '0.5rem',
+            padding: '12px 16px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#d64b28',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#dc2626',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </div>
   )
 }

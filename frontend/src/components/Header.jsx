@@ -1,156 +1,185 @@
-import { ShoppingBag, User, Menu, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ShoppingBag, User, Menu, X, LogOut, Package } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { useCartStore } from '../stores/cartStore'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [showUserMenu, setShowUserMenu] = useState(false)
   const { isAuthenticated, user, logout } = useAuthStore()
-  const { getItemCount, openCart, fetchCart } = useCartStore()
+  const { openCart, getItemCount } = useCartStore()
   const navigate = useNavigate()
-  const itemCount = getItemCount()
-
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchCart()
-    }
-  }, [isAuthenticated, user, fetchCart])
+  const cartCount = getItemCount()
 
   const handleLogout = () => {
     logout()
-    setShowUserMenu(false)
-    navigate('/')
+    navigate('/auth/login')
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header
+      className={`sticky top-0 z-40 transition-all duration-300  'bg-[rgba(#fff, 0.2)] backdrop-blur-md shadow-md'
+      `}
+    >
+      <div className="container-custom">
+        <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">T</span>
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-terracotta-500 to-nepal-600 rounded-lg flex items-center justify-center transform transition-transform group-hover:scale-105">
+              <span className="text-white font-bold text-xl font-display">N</span>
             </div>
-            <span className="text-lg font-semibold text-gray-900 hidden sm:block">
-              Technologia
+            <span className="text-2xl font-display font-bold text-nepal-900 hidden sm:block">
+              NepWears
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors">
+          <nav className="hidden md:flex items-center gap-8">
+            <Link
+              to="/"
+              className="text-nepal-700 hover:text-terracotta-600 font-medium transition-colors"
+            >
               Home
             </Link>
-            <Link to="/products" className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors">
-              Products
+            <Link
+              to="/products"
+              className="text-nepal-700 hover:text-terracotta-600 font-medium transition-colors"
+            >
+              Shop
+            </Link>
+            <Link
+              to="/about"
+              className="text-nepal-700 hover:text-terracotta-600 font-medium transition-colors"
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              className="text-nepal-700 hover:text-terracotta-600 font-medium transition-colors"
+            >
+              Contact
             </Link>
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center space-x-3">
-            {/* Cart */}
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Cart Button */}
             <button
               onClick={openCart}
-              className="relative p-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-lg transition-all"
+              className="relative p-2 hover:bg-nepal-100 rounded-full transition-colors"
+              aria-label="Shopping cart"
             >
-              <ShoppingBag className="w-5 h-5" />
-              {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                  {itemCount}
+              <ShoppingBag className="w-6 h-6 text-nepal-700" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-terracotta-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {cartCount}
                 </span>
               )}
             </button>
 
             {/* User Menu */}
             {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="p-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-lg transition-all"
-                >
-                  <User className="w-5 h-5" />
+              <div className="relative group">
+                <button className="flex items-center gap-2 p-2 hover:bg-nepal-100 rounded-full transition-colors">
+                  <div className="w-8 h-8 bg-nepal-200 rounded-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-nepal-700" />
+                  </div>
+                  <span className="hidden lg:block text-nepal-700 font-medium">
+                    {user?.name?.split(' ')[0]}
+                  </span>
                 </button>
-                
+
                 {/* Dropdown */}
-                {showUserMenu && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-10" 
-                      onClick={() => setShowUserMenu(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                      </div>
-                      <Link
-                        to="/orders"
-                        onClick={() => setShowUserMenu(false)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        My Orders
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  </>
-                )}
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-nepal-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="p-2 space-y-1">
+                    <Link
+                      to="/orders"
+                      className="flex items-center gap-2 px-3 py-2 text-nepal-700 hover:bg-nepal-50 rounded-md transition-colors"
+                    >
+                      <Package className="w-4 h-4" />
+                      My Orders
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
-              <Link to="/auth/login">
-                <button className="hidden sm:block px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors">
-                  Sign In
-                </button>
+              <Link
+                to="/auth/login"
+                className="hidden md:flex items-center gap-2 px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition-colors font-medium"
+              >
+                <User className="w-4 h-4" />
+                Login
               </Link>
             )}
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-lg transition-all"
+              className="md:hidden p-2 hover:bg-nepal-100 rounded-full transition-colors"
+              aria-label="Menu"
             >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMenuOpen ? (
+                <X className="w-6 h-6 text-nepal-700" />
+              ) : (
+                <Menu className="w-6 h-6 text-nepal-700" />
+              )}
             </button>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
-            <nav className="flex flex-col space-y-1">
-              <Link 
-                to="/" 
-                onClick={() => setIsMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg"
-              >
-                Home
-              </Link>
-              <Link 
-                to="/products" 
-                onClick={() => setIsMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg"
-              >
-                Products
-              </Link>
-              {!isAuthenticated && (
-                <Link 
-                  to="/auth/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="mx-3 mt-2 px-3 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 text-center"
-                >
-                  Sign In
-                </Link>
-              )}
-            </nav>
-          </div>
-        )}
       </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden border-t border-nepal-200 bg-white animate-slide-down">
+          <div className="container-custom py-4 space-y-2">
+            <Link
+              to="/"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-2 text-nepal-700 hover:bg-nepal-50 rounded-md transition-colors"
+            >
+              Home
+            </Link>
+            <Link
+              to="/products"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-2 text-nepal-700 hover:bg-nepal-50 rounded-md transition-colors"
+            >
+              Shop
+            </Link>
+            <Link
+              to="/about"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-2 text-nepal-700 hover:bg-nepal-50 rounded-md transition-colors"
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-2 text-nepal-700 hover:bg-nepal-50 rounded-md transition-colors"
+            >
+              Contact
+            </Link>
+
+            {!isAuthenticated && (
+              <Link
+                to="/auth/login"
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-4 py-2 bg-terracotta-600 text-white rounded-md hover:bg-terracotta-700 transition-colors text-center font-medium"
+              >
+                Login
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   )
 }

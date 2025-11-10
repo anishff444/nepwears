@@ -1,19 +1,17 @@
-import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
-import { ArrowLeft, ShoppingCart, Heart, Share2, Package, Shield, Truck } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Heart, Share2, Check } from 'lucide-react'
 import { productApi } from '../services/productService'
 import { useCartStore } from '../stores/cartStore'
-import Loader from '../components/Loader'
+import { PageLoader } from '../components/Loader'
 import toast from 'react-hot-toast'
+import { useState } from 'react'
 
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [quantity, setQuantity] = useState(1)
-  const [isLiked, setIsLiked] = useState(false)
-  const { addItem, openCart } = useCartStore()
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const { addItem } = useCartStore()
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['product', id],
@@ -21,29 +19,33 @@ export default function ProductDetailPage() {
   })
 
   const product = data?.data?.product
+  console.log(product);
 
-  const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addItem(product)
+  const handleAddToCart = async () => {
+    setIsAddingToCart(true)
+    try {
+      await addItem(product._id)
+      toast.success('Added to cart!')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to add to cart')
+    } finally {
+      setIsAddingToCart(false)
     }
-    toast.success(`Added ${quantity} item(s) to cart!`)
-    setTimeout(() => openCart(), 500)
   }
 
-  const handleBuyNow = () => {
-    handleAddToCart()
-    navigate('/checkout')
-  }
+  if (isLoading) return <PageLoader />
 
-  if (isLoading) return <Loader />
   if (error || !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-nepal-50/50">
         <div className="text-center">
-          <p className="text-red-600 dark:text-red-400 mb-4">
+          <h2 className="text-2xl font-display font-bold text-nepal-900 mb-2">
             Product not found
+          </h2>
+          <p className="text-nepal-600 mb-6">
+            The product you're looking for doesn't exist
           </p>
-          <button onClick={() => navigate('/products')} className="btn-primary">
+          <button onClick={() => navigate('/products')} className="btn btn-primary">
             Back to Products
           </button>
         </div>
@@ -52,170 +54,166 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen bg-nepal-50/50 py-8 md:py-12">
       <div className="container-custom">
         {/* Back Button */}
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={() => navigate(-1)}
-          className="btn-ghost inline-flex items-center gap-2 mb-8"
+          className="flex items-center gap-2 text-nepal-700 hover:text-terracotta-600 transition-colors mb-6 group"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Back
-        </motion.button>
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium">Back</span>
+        </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Product Content */}
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Image */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
-          >
-            <div className="aspect-square rounded-3xl overflow-hidden glass">
-              <motion.img
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.4 }}
-                src={product.imageUrl}
+          <div className="space-y-4">
+            <div className="aspect-square bg-white rounded-2xl overflow-hidden border border-nepal-200 shadow-sm">
+              <img
+                src={product.imageUrl || '/placeholder.jpg'}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
-          </motion.div>
+
+            {/* Share and Wishlist */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href)
+                  toast.success('Link copied to clipboard!')
+                }}
+                className="flex-1 btn btn-outline"
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+              <button
+                onClick={() => toast.success('Added to wishlist!')}
+                className="flex-1 btn btn-outline"
+              >
+                <Heart className="w-4 h-4" />
+                Wishlist
+              </button>
+            </div>
+          </div>
 
           {/* Product Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-6"
-          >
-            {/* Category & Share */}
-            <div className="flex items-center justify-between">
-              <span className="px-4 py-2 glass rounded-full text-sm font-medium capitalize">
-                {product.category}
-              </span>
-              <div className="flex gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsLiked(!isLiked)}
-                  className={`w-11 h-11 rounded-xl glass flex items-center justify-center transition-colors ${
-                    isLiked
-                      ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white'
-                      : 'hover:bg-dark-100 dark:hover:bg-dark-800'
-                  }`}
-                >
-                  <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href)
-                    toast.success('Link copied to clipboard!')
-                  }}
-                  className="w-11 h-11 rounded-xl glass flex items-center justify-center hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"
-                >
-                  <Share2 className="w-5 h-5" />
-                </motion.button>
+          <div className="space-y-6">
+            {/* Category */}
+            {product.category && (
+              <div className="inline-block">
+                <span className="badge badge-primary">
+                  {product.category}
+                </span>
               </div>
-            </div>
+            )}
 
-            {/* Title & Price */}
+            {/* Product Name */}
             <div>
-              <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-              <div className="flex items-baseline gap-4">
-                <p className="text-5xl font-bold gradient-text">
-                  ${product.price.toFixed(2)}
-                </p>
-                {product.stock < 10 && product.stock > 0 && (
-                  <span className="text-orange-600 dark:text-orange-400 font-medium">
-                    Only {product.stock} left!
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="glass rounded-2xl p-6">
-              <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-dark-600 dark:text-dark-400 leading-relaxed">
+              <h1 className="heading-2 mb-2">
+                {product.name}
+              </h1>
+              <p className="text-nepal-600">
                 {product.description}
               </p>
             </div>
 
-            {/* Quantity Selector */}
-            <div>
-              <label className="block text-sm font-medium mb-3">Quantity</label>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center glass rounded-xl">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-12 h-12 flex items-center justify-center hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors rounded-l-xl"
-                  >
-                    -
-                  </motion.button>
-                  <span className="w-16 text-center font-semibold">{quantity}</span>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                    className="w-12 h-12 flex items-center justify-center hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors rounded-r-xl"
-                  >
-                    +
-                  </motion.button>
+            {/* Price */}
+            <div className="py-4 border-y border-nepal-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-nepal-600 mb-1">Price</p>
+                  <p className="font-display font-bold text-3xl text-terracotta-600">
+                    NPR {product.price?.toLocaleString()}
+                  </p>
                 </div>
-                <span className="text-sm text-dark-500">
-                  {product.stock} available
-                </span>
+                {/* Stock Status */}
+                <div>
+                  {product.stock > 0 ? (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <Check className="w-5 h-5" />
+                      <span className="font-medium">In Stock</span>
+                    </div>
+                  ) : (
+                    <span className="text-red-600 font-medium">Out of Stock</span>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+            {/* Stock Info */}
+            {product.stock > 0 && (
+              <div className="bg-nepal-100 rounded-lg p-4">
+                <p className="text-sm text-nepal-700">
+                  <span className="font-semibold">{product.stock}</span> items available
+                </p>
+              </div>
+            )}
+
+            {/* Add to Cart */}
+            <div className="space-y-3">
+              <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
-                className="flex-1 btn-secondary inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isAddingToCart || product.stock === 0}
+                className="w-full btn btn-primary text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="w-5 h-5" />
-                Add to Cart
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleBuyNow}
-                disabled={product.stock === 0}
-                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Buy Now
-              </motion.button>
+                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              </button>
+            </div>
+
+            {/* Product Details */}
+            <div className="bg-white rounded-xl border border-nepal-200 p-6 space-y-4">
+              <h3 className="font-display font-semibold text-lg text-nepal-900">
+                Product Details
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between py-2 border-b border-nepal-100">
+                  <span className="text-nepal-600">SKU</span>
+                  <span className="font-medium text-nepal-900">{product._id?.slice(-8)}</span>
+                </div>
+                {product.category && (
+                  <div className="flex justify-between py-2 border-b border-nepal-100">
+                    <span className="text-nepal-600">Category</span>
+                    <span className="font-medium text-nepal-900">{product.category}</span>
+                  </div>
+                )}
+                <div className="flex justify-between py-2 border-b border-nepal-100">
+                  <span className="text-nepal-600">Availability</span>
+                  <span className={`font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { icon: Truck, title: 'Fast Delivery', desc: '2-3 days' },
-                { icon: Shield, title: 'Secure Payment', desc: '100% Protected' },
-                { icon: Package, title: 'Easy Returns', desc: '30-day policy' },
-              ].map((feature) => (
-                <div
-                  key={feature.title}
-                  className="glass rounded-xl p-4 text-center space-y-2"
-                >
-                  <feature.icon className="w-8 h-8 mx-auto text-primary-600" />
-                  <h4 className="font-semibold text-sm">{feature.title}</h4>
-                  <p className="text-xs text-dark-500">{feature.desc}</p>
-                </div>
-              ))}
+            <div className="bg-gradient-to-br from-nepal-100 to-terracotta-50 rounded-xl p-6">
+              <h3 className="font-display font-semibold text-lg text-nepal-900 mb-4">
+                Why Choose NepWears?
+              </h3>
+              <ul className="space-y-3 text-sm text-nepal-700">
+                <li className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-terracotta-600 flex-shrink-0 mt-0.5" />
+                  <span>Authentic Nepali craftsmanship</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-terracotta-600 flex-shrink-0 mt-0.5" />
+                  <span>Premium quality materials</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-terracotta-600 flex-shrink-0 mt-0.5" />
+                  <span>Supporting local artisans</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-5 h-5 text-terracotta-600 flex-shrink-0 mt-0.5" />
+                  <span>Free shipping on orders over NPR 5000</span>
+                </li>
+              </ul>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

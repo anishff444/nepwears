@@ -1,241 +1,242 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Link, useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { Mountain } from 'lucide-react'
 import { authApi } from '../services/authService'
 import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true)
-  const [showPassword, setShowPassword] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const setAuth = useAuthStore((state) => state.setAuth)
+  
+  const isLoginPage = location.pathname.includes('/login')
+  const [isLogin, setIsLogin] = useState(isLoginPage)
+  const [isLoading, setIsLoading] = useState(false)
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   })
-  const navigate = useNavigate()
-  const { setAuth } = useAuthStore()
 
-  const loginMutation = useMutation({
-    mutationFn: authApi.login,
-    onSuccess: (data) => {
-      setAuth(data.data.user, data.token)
-      toast.success('Welcome back!')
-      navigate('/')
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Login failed')
-    },
-  })
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
-  const signupMutation = useMutation({
-    mutationFn: authApi.signup,
-    onSuccess: (data) => {
-      setAuth(data.data.user, data.token)
-      toast.success('Account created successfully!')
-      navigate('/')
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Signup failed')
-    },
-  })
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    if (isLogin) {
-      loginMutation.mutate({
-        email: formData.email,
-        password: formData.password,
-      })
-    } else {
-      if (formData.password !== formData.confirmPassword) {
-        toast.error('Passwords do not match')
-        return
+    setIsLoading(true)
+
+    try {
+      if (isLogin) {
+        // Login
+        const response = await authApi.login({
+          email: formData.email,
+          password: formData.password,
+        })
+        
+        setAuth(response.user, response.token)
+        toast.success('Welcome back!')
+        navigate('/')
+      } else {
+        // Signup
+        if (formData.password !== formData.confirmPassword) {
+          toast.error('Passwords do not match')
+          setIsLoading(false)
+          return
+        }
+
+        const response = await authApi.signup({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        })
+
+        setAuth(response.user, response.token)
+        toast.success('Account created successfully!')
+        navigate('/')
       }
-      signupMutation.mutate(formData)
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Something went wrong')
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
-  }
-
-  const isLoading = loginMutation.isPending || signupMutation.isPending
-
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
-      {/* Background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-nepal-100 via-nepal-50 to-terracotta-50 nepal-pattern flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-strong rounded-3xl p-8 shadow-2xl"
-        >
-          {/* Logo */}
-          <div className="flex justify-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-lg shadow-primary-500/30">
-              <span className="text-white font-bold text-2xl">L</span>
-            </div>
+        {/* Logo */}
+        <Link to="/" className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-12 h-12 bg-gradient-to-br from-terracotta-500 to-nepal-600 rounded-xl flex items-center justify-center">
+            <Mountain className="w-7 h-7 text-white" />
+          </div>
+          <span className="text-2xl font-display font-bold text-nepal-900">
+            NepWears
+          </span>
+        </Link>
+
+        {/* Auth Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-nepal-200 overflow-hidden">
+          {/* Tab Switcher */}
+          <div className="grid grid-cols-2 border-b border-nepal-200">
+            <button
+              onClick={() => {
+                setIsLogin(true)
+                navigate('/auth/login')
+              }}
+              className={`py-4 font-medium transition-colors ${
+                isLogin
+                  ? 'text-terracotta-600 border-b-2 border-terracotta-600 bg-terracotta-50/50'
+                  : 'text-nepal-600 hover:text-nepal-900 hover:bg-nepal-50'
+              }`}
+            >
+              Login
+            </button>
+            <button
+              onClick={() => {
+                setIsLogin(false)
+                navigate('/auth/signup')
+              }}
+              className={`py-4 font-medium transition-colors ${
+                !isLogin
+                  ? 'text-terracotta-600 border-b-2 border-terracotta-600 bg-terracotta-50/50'
+                  : 'text-nepal-600 hover:text-nepal-900 hover:bg-nepal-50'
+              }`}
+            >
+              Sign Up
+            </button>
           </div>
 
-          {/* Title */}
-          <h2 className="text-3xl font-bold text-center mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </h2>
-          <p className="text-center text-dark-600 dark:text-dark-400 mb-8">
-            {isLogin
-              ? 'Sign in to continue shopping'
-              : 'Join us for an amazing experience'}
-          </p>
-
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <AnimatePresence mode="wait">
-              {!isLogin && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <label className="block text-sm font-medium mb-2">Name</label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="John Doe"
-                      className="input-field pl-12"
-                      required={!isLogin}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="you@example.com"
-                  className="input-field pl-12"
-                  required
-                />
-              </div>
+          <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-display font-bold text-nepal-900 mb-2">
+                {isLogin ? 'Welcome Back' : 'Create Account'}
+              </h2>
+              <p className="text-nepal-600 text-sm">
+                {isLogin
+                  ? 'Enter your credentials to access your account'
+                  : 'Join the NepWears community today'}
+              </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
+            {/* Name Field (Signup only) */}
+            {!isLogin && (
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-nepal-700 mb-2">
+                  Full Name
+                </label>
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
-                  placeholder="••••••••"
-                  className="input-field pl-12 pr-12"
                   required
+                  className="input"
+                  placeholder="Enter your full name"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600 dark:hover:text-dark-200"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            <AnimatePresence mode="wait">
-              {!isLogin && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <label className="block text-sm font-medium mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="••••••••"
-                      className="input-field pl-12"
-                      required={!isLogin}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {isLogin && (
-              <div className="flex justify-end">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-primary-600 hover:text-primary-700 transition-colors"
-                >
-                  Forgot password?
-                </Link>
               </div>
             )}
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-nepal-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="input"
+                placeholder="you@example.com"
+              />
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-nepal-700 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                minLength={8}
+                className="input"
+                placeholder="••••••••"
+              />
+            </div>
+
+            {/* Confirm Password (Signup only) */}
+            {!isLogin && (
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-nepal-700 mb-2">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  minLength={8}
+                  className="input"
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
+
+            {/* Forgot Password (Login only) */}
+            {isLogin && (
+              <div className="text-right">
+                <a href="#" className="text-sm text-terracotta-600 hover:text-terracotta-700">
+                  Forgot password?
+                </a>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn btn-primary py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
-            </motion.button>
+              {isLoading ? 'Please wait...' : (isLogin ? 'Login' : 'Create Account')}
+            </button>
+
+            {/* Terms (Signup only) */}
+            {!isLogin && (
+              <p className="text-xs text-nepal-500 text-center">
+                By signing up, you agree to our{' '}
+                <a href="#" className="text-terracotta-600 hover:underline">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="#" className="text-terracotta-600 hover:underline">
+                  Privacy Policy
+                </a>
+              </p>
+            )}
           </form>
+        </div>
 
-          {/* Toggle */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-dark-600 dark:text-dark-400">
-              {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
-              >
-                {isLogin ? 'Sign Up' : 'Sign In'}
-              </button>
-            </p>
-          </div>
-
-          {/* Back to Home */}
-          <div className="mt-6 text-center">
-            <Link
-              to="/"
-              className="text-sm text-dark-500 hover:text-dark-700 dark:hover:text-dark-300 transition-colors"
-            >
-              ← Back to Home
-            </Link>
-          </div>
-        </motion.div>
+        {/* Back to Home */}
+        <div className="text-center mt-6">
+          <Link to="/" className="text-nepal-700 hover:text-terracotta-600 text-sm font-medium">
+            ← Back to Home
+          </Link>
+        </div>
       </div>
     </div>
   )

@@ -3,8 +3,7 @@ import api from '../lib/api'
 export const productApi = {
   getAllProducts: async () => {
     const response = await api.get('/products')
-    console.log(response.data);
-    return response.data;
+    return response.data
   },
 
   getProduct: async (id) => {

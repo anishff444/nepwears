@@ -1,99 +1,77 @@
-import { motion } from 'framer-motion'
-import { XCircle, ArrowLeft, RefreshCw } from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { XCircle, RefreshCw } from 'lucide-react'
 
 export default function PaymentFailed() {
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const reason = searchParams.get('reason')
-
-  const getErrorMessage = () => {
-    switch (reason) {
-      case 'order_not_found':
-        return 'Order not found. Please try again.'
-      case 'invalid_signature':
-        return 'Payment verification failed. Please contact support.'
-      case 'amount_mismatch':
-        return 'Payment amount mismatch. Please contact support.'
-      default:
-        return 'Your payment could not be processed. Please try again.'
-    }
-  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full"
-      >
-        <div className="glass rounded-3xl p-8 text-center">
-          {/* Error Icon */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="w-20 h-20 mx-auto mb-6 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center"
-          >
-            <XCircle className="w-12 h-12 text-red-600 dark:text-red-400" />
-          </motion.div>
+    <div className="min-h-screen bg-nepal-50/50 flex items-center justify-center p-4 py-12">
+      <div className="max-w-md w-full text-center">
+        {/* Error Icon */}
+        <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-rose-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-fade-in">
+          <XCircle className="w-12 h-12 text-red-600" />
+        </div>
 
-          {/* Error Message */}
-          <motion.h1
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-3xl font-bold mb-2"
-          >
+        {/* Content Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-nepal-200 p-8 mb-6 animate-slide-up">
+          <h1 className="heading-2 text-red-600 mb-3">
             Payment Failed
-          </motion.h1>
+          </h1>
+          <p className="text-nepal-700 mb-6 leading-relaxed">
+            We couldn't process your payment. This could be due to insufficient funds, incorrect payment details, or a network issue.
+          </p>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-dark-600 dark:text-dark-400 mb-6"
-          >
-            {getErrorMessage()}
-          </motion.p>
+          {/* Info Box */}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
+            <h3 className="font-semibold text-red-900 mb-2 text-sm">
+              Common reasons for payment failure:
+            </h3>
+            <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
+              <li>Insufficient balance in eSewa account</li>
+              <li>Incorrect payment credentials</li>
+              <li>Payment timeout or cancelled</li>
+              <li>Network connectivity issues</li>
+            </ul>
+          </div>
 
-          {/* Additional Info */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="glass rounded-2xl p-4 mb-6 text-left"
-          >
-            <p className="text-sm text-dark-600 dark:text-dark-400">
-              If you have been charged, the amount will be refunded within 5-7 business days.
-              For assistance, please contact our support team.
-            </p>
-          </motion.div>
+          <p className="text-sm text-nepal-600 mb-6">
+            Don't worry, no charges were made to your account. You can try again or contact support if the issue persists.
+          </p>
 
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
               onClick={() => navigate('/checkout')}
-              className="btn-primary w-full inline-flex items-center justify-center gap-2"
+              className="flex-1 btn btn-primary"
             >
               <RefreshCw className="w-4 h-4" />
               Try Again
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate('/')}
-              className="btn-secondary w-full inline-flex items-center justify-center gap-2"
+            </button>
+            <button
+              onClick={() => navigate('/products')}
+              className="flex-1 btn btn-outline"
             >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </motion.button>
+              Continue Shopping
+            </button>
           </div>
         </div>
-      </motion.div>
+
+        {/* Support Link */}
+        <p className="text-sm text-nepal-600 mb-4">
+          Need help?{' '}
+          <a href="#" className="text-terracotta-600 hover:text-terracotta-700 font-medium">
+            Contact Support
+          </a>
+        </p>
+
+        {/* Home Link */}
+        <button
+          onClick={() => navigate('/')}
+          className="text-nepal-700 hover:text-terracotta-600 text-sm font-medium transition-colors"
+        >
+          ← Back to Home
+        </button>
+      </div>
     </div>
   )
 }
